@@ -16,3 +16,20 @@ class SpotifyAuth():
                                                         show_dialog=True, 
                                                         cache_path='token.txt'))
         self.user_id = self.sp_obj.current_user()['id']
+
+    def get_song_uris(self, song_list:tuple, year:str) -> list:
+        song_uris = []
+        for song in song_list:
+            result = self.sp_obj.search(q=f"track:{song} year:{year}", type="track")
+            # print(result)
+            try:
+                uri = result["tracks"]["items"][0]["uri"]
+                song_uris.append(uri)
+            except IndexError:
+                print(f"{song} doesn't exist in Spotify. Skipped.")
+        return song_uris
+
+    def setup_playlist(self, song_uris:list, date:str) -> None:
+        playlist = self.sp_obj.user_playlist_create(user=self.user_id, name=f"{date} Billboard 100", public=False)
+        # print(playlist)
+        self.sp_obj.playlist_add_items(playlist_id=playlist["id"], items=song_uris)
